@@ -9,6 +9,11 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 
+//TODO: lösningen i koden
+//ersätt application quits med return
+//	om nått är första gången sätt *
+//	om första tecken i strängen är * ta bort det och jämför sen
+
 namespace DVGB07_viktlund104_Laboration3_Notepad
 {
 	public partial class Notepad : Form
@@ -28,6 +33,7 @@ namespace DVGB07_viktlund104_Laboration3_Notepad
 			isSaved = false; // initialize
 			startup = true; // first start
 			filePathExists = ""; // initialize to avoid null error when comparing
+			statusBar.Text = "";
 		}
 
 		private void newToolStripMenuItem_Click(object sender, EventArgs e)
@@ -106,7 +112,8 @@ namespace DVGB07_viktlund104_Laboration3_Notepad
 
 		private void exitToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			Application.Exit(); // To force trigger FormClosing event
+			//Application.Exit(); // To force trigger FormClosing event
+			this.Close();
 		}
 
 		private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
@@ -200,7 +207,11 @@ namespace DVGB07_viktlund104_Laboration3_Notepad
 		{
 			isSaved = false;
 			startup = false;
-			statusBar.Text = isSaved.ToString();
+
+			if (statusBar.Text == "")
+			{
+				statusBar.Text = "*";
+			}
 		}
 
 		private void Exit()
@@ -223,7 +234,7 @@ namespace DVGB07_viktlund104_Laboration3_Notepad
 				}
 				else if (result == DialogResult.No)
 				{
-					Application.Exit();
+					Application.Exit(); 
 				}
 				else
 				{
@@ -232,7 +243,7 @@ namespace DVGB07_viktlund104_Laboration3_Notepad
 			}
 			else
 			{
-				Application.Exit();
+			 	Application.Exit();
 			}
 		}
 
