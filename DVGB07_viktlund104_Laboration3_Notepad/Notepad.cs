@@ -9,11 +9,6 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 
-//TODO: lösningen i koden
-//ersätt application quits med return
-//	om nått är första gången sätt *
-//	om första tecken i strängen är * ta bort det och jämför sen
-
 namespace DVGB07_viktlund104_Laboration3_Notepad
 {
 	public partial class Notepad : Form
@@ -33,7 +28,6 @@ namespace DVGB07_viktlund104_Laboration3_Notepad
 			isSaved = false; // initialize
 			startup = true; // first start
 			filePathExists = ""; // initialize to avoid null error when comparing
-			statusBar.Text = "";
 		}
 
 		private void newToolStripMenuItem_Click(object sender, EventArgs e)
@@ -45,15 +39,11 @@ namespace DVGB07_viktlund104_Laboration3_Notepad
 					MessageBoxIcon.Stop);
 				if (result == DialogResult.Yes)
 				{
-					SaveAs(false); // Send to save method
+					SaveAs(); // Send to save method
 				}
 				else if (result == DialogResult.No)
 				{
 					Clear(); // Clear
-				}
-				else
-				{
-					return; // Cancel, we don't wanna run rest of the code
 				}
 			}
 			else
@@ -71,15 +61,11 @@ namespace DVGB07_viktlund104_Laboration3_Notepad
 					MessageBoxIcon.Stop);
 				if (result == DialogResult.Yes)
 				{
-					SaveAs(false); // Send to save method
+					SaveAs(); // Send to save method
 				}
 				else if (result == DialogResult.No)
 				{
 					Open(); // Send to open method
-				}
-				else
-				{
-					return; // Cancel, we don't wanna run rest of the code
 				}
 			}
 			else
@@ -90,30 +76,35 @@ namespace DVGB07_viktlund104_Laboration3_Notepad
 
 		private void saveToolStripMenuItem_Click(object sender, EventArgs e)
 		{
+			// first check for the * sign. remove it
+			string title = this.Text;
+			
+			if (title[0].Equals('*'))
+			{
+				title = title.Substring(1);
+			}
+			
 			// if this statement is true, we have opened an existing file or have already saved an file
 			// so we just wanna write to the same path again
-			if (this.Text == Path.GetFileName(filePathExists))
+			if (title == Path.GetFileName(filePathExists))
 			{
-				QuickSave(false);
+				QuickSave();
 			}
 			// In this case, we have to open the save as dialog
 			else
 			{
-				SaveAs(false);
+				SaveAs();
 			}
 		}
 		
-
-
 		private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			SaveAs(false);
+			SaveAs();
 		}
 
 		private void exitToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			//Application.Exit(); // To force trigger FormClosing event
-			this.Close();
+			Application.Exit(); // To force trigger FormClosing event
 		}
 
 		private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
@@ -122,7 +113,7 @@ namespace DVGB07_viktlund104_Laboration3_Notepad
 				MessageBoxIcon.Information);
 		}
 
-		private void SaveAs(bool quitSave)
+		private void SaveAs()
 		{
 			save = new SaveFileDialog();
 			save.Filter = "Text Files (*.txt)|*.txt|All Files (*)|*";
@@ -136,12 +127,6 @@ namespace DVGB07_viktlund104_Laboration3_Notepad
 					this.Text = Path.GetFileName(save.FileName);
 					filePathExists = save.FileName;
 					isSaved = true;
-					statusBar.Text = isSaved.ToString();
-
-					if (quitSave)
-					{
-						Application.Exit();
-					}
 				}
 				catch (Exception ex)
 				{
@@ -151,18 +136,13 @@ namespace DVGB07_viktlund104_Laboration3_Notepad
 			}
 		}
 		
-		private void QuickSave(bool quitSave)
+		private void QuickSave()
 		{
 			try
 			{
 				File.WriteAllText(filePathExists, richTextBox.Text);
+				this.Text = Path.GetFileName(filePathExists);
 				isSaved = true;
-				statusBar.Text = isSaved.ToString();
-
-				if (quitSave)
-				{
-					Application.Exit();
-				}
 			}
 			catch (Exception ex)
 			{
@@ -184,6 +164,7 @@ namespace DVGB07_viktlund104_Laboration3_Notepad
 					richTextBox.Text = File.ReadAllText(load.FileName);
 					this.Text = Path.GetFileName(load.FileName);
 					filePathExists = load.FileName;
+					isSaved = true;
 				}
 				catch (Exception ex)
 				{
@@ -201,17 +182,29 @@ namespace DVGB07_viktlund104_Laboration3_Notepad
 			isSaved = false;
 			startup = true;
 		}
-
-
+		
+		// Checking for changes in the textbox. Has the user wrote anything?
 		private void richTextBox_KeyPress(object sender, KeyPressEventArgs e)
 		{
-			isSaved = false;
-			startup = false;
+			//isSaved = false;
 
-			if (statusBar.Text == "")
+			if (startup == true)
 			{
-				statusBar.Text = "*";
+				this.Text = "*" + this.Text;
+				startup = false;
 			}
+
+			if (isSaved == true)
+			{
+				this.Text = "*" + this.Text;
+				isSaved = false;
+			}
+		}
+		
+		// Using this event we will catch user clicks off the X button as well as menu exits
+		private void Notepad_FormClosing(object sender, FormClosingEventArgs e)
+		{
+			Exit();
 		}
 
 		private void Exit()
@@ -222,35 +215,26 @@ namespace DVGB07_viktlund104_Laboration3_Notepad
 					MessageBoxIcon.Stop);
 				if (result == DialogResult.Yes)
 				{
-					// Send to save
-					if (this.Text == Path.GetFileName(filePathExists))
+					// first check for the * sign. remove it
+					string title = this.Text;
+			
+					if (title[0].Equals('*'))
 					{
-						QuickSave(true);
+						title = title.Substring(1);
+					}
+					
+					// Send to save
+					if (title == Path.GetFileName(filePathExists))
+					{
+						QuickSave();
 					}
 					else
 					{
-						SaveAs(true);
+						SaveAs();
 					}
 				}
-				else if (result == DialogResult.No)
-				{
-					Application.Exit(); 
-				}
-				else
-				{
-					return; // Cancel, we don't wanna run rest of the code
-				}
-			}
-			else
-			{
-			 	Application.Exit();
 			}
 		}
 
-		// Using this event we will catch user clicks off the X button as well as menu exits
-		private void Notepad_FormClosing(object sender, FormClosingEventArgs e)
-		{
-			Exit();
-		}
 	}
 }

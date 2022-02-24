@@ -38,7 +38,6 @@
 			this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.statusBar = new System.Windows.Forms.StatusBar();
 			this.richTextBox = new System.Windows.Forms.RichTextBox();
 			this.menuStrip.SuspendLayout();
 			this.SuspendLayout();
@@ -112,21 +111,13 @@
 			this.aboutToolStripMenuItem.Text = "Om Notepad";
 			this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
 			// 
-			// statusBar
-			// 
-			this.statusBar.Location = new System.Drawing.Point(0, 428);
-			this.statusBar.Name = "statusBar";
-			this.statusBar.Size = new System.Drawing.Size(800, 22);
-			this.statusBar.TabIndex = 1;
-			this.statusBar.Text = "TODO: Implement status bar functions";
-			// 
 			// richTextBox
 			// 
 			this.richTextBox.Anchor = ((System.Windows.Forms.AnchorStyles) ((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
 			this.richTextBox.Location = new System.Drawing.Point(0, 27);
 			this.richTextBox.Name = "richTextBox";
 			this.richTextBox.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical;
-			this.richTextBox.Size = new System.Drawing.Size(800, 402);
+			this.richTextBox.Size = new System.Drawing.Size(800, 424);
 			this.richTextBox.TabIndex = 2;
 			this.richTextBox.Text = "";
 			this.richTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.richTextBox_KeyPress);
@@ -137,7 +128,6 @@
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(800, 450);
 			this.Controls.Add(this.richTextBox);
-			this.Controls.Add(this.statusBar);
 			this.Controls.Add(this.menuStrip);
 			this.MainMenuStrip = this.menuStrip;
 			this.Name = "Notepad";
@@ -153,8 +143,6 @@
 
 		private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
-
-		private System.Windows.Forms.StatusBar statusBar;
 
 		private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
