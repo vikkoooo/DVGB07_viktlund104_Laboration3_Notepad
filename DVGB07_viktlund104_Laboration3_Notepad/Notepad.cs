@@ -9,6 +9,12 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 
+/*
+ * Simple notepad application.
+ * Created for course: DVGB07, Laboration 3
+ * By: Viktor Lundberg
+ * 2022-02-25
+ */
 namespace DVGB07_viktlund104_Laboration3_Notepad
 {
 	public partial class Notepad : Form
@@ -16,7 +22,7 @@ namespace DVGB07_viktlund104_Laboration3_Notepad
 		// Tools
 		private OpenFileDialog load;
 		private SaveFileDialog save;
-		private bool isSaved;
+		private bool isSaved; // tracking save status
 		private bool startup; // possible to start application and instantly open file without YesNoCancel popup
 		private string filePathExists; // to allow quicksave
 
@@ -30,38 +36,45 @@ namespace DVGB07_viktlund104_Laboration3_Notepad
 			filePathExists = ""; // initialize to avoid null error when comparing
 		}
 
+		// "Arkiv -> Ny" button (hotkey CTRL + N)
 		private void newToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			// Check if file is saved and we are not on a fresh start
+			// Check if file is saved and and if we are on a fresh start
 			if (isSaved == false && startup == false)
 			{
+				// Ask user to save first
 				var result = MessageBox.Show("Vill du spara först?", "Notepad", MessageBoxButtons.YesNoCancel,
 					MessageBoxIcon.Stop);
+
+				// Handle user response
 				if (result == DialogResult.Yes)
 				{
-					SaveAs(); // Send to save method
+					AttemptSave();
+					Clear();
 				}
 				else if (result == DialogResult.No)
 				{
-					Clear(); // Clear
+					Clear();
 				}
 			}
 			else
 			{
-				// File was already saved, clear
-				Clear();
+				Clear(); // File was already saved
 			}
 		}
 
+		// "Arkiv -> Öppna" button (hotkey CTRL + O)
 		private void openToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (isSaved == false && startup == false)
 			{
 				var result = MessageBox.Show("Vill du spara först?", "Notepad", MessageBoxButtons.YesNoCancel,
 					MessageBoxIcon.Stop);
+
 				if (result == DialogResult.Yes)
 				{
-					SaveAs(); // Send to save method
+					AttemptSave();
+					Open();
 				}
 				else if (result == DialogResult.No)
 				{
@@ -74,68 +87,87 @@ namespace DVGB07_viktlund104_Laboration3_Notepad
 			}
 		}
 
+		// "Arkiv -> Spara" button (hotkey CTRL + S)
 		private void saveToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			// first check for the * sign. remove it
+			AttemptSave();
+		}
+
+		// "Arkiv -> Spara som" button (hotkey CTRL + SHIFT + S)
+		private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			SaveAs(); // Will skip quicksave function, sends user straight to save as method
+		}
+
+		// "Arkiv -> Avsluta" button (hotkey CTRL + SHIFT + S)
+		// This function will trigger FormClosing event. This way, we get same functionality with using the "Avsluta"
+		// button as well as X on the right top corner
+		private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			Application.Exit(); // Force trigger FormClosing event
+		}
+
+		// "Hjälp -> Om Notepad" button. Information about the creator. 
+		private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			MessageBox.Show("Notepad v1.0\nFree to use\nBy Viktor Lundberg\nCreated 2022-02-25", "About",
+				MessageBoxButtons.OK,
+				MessageBoxIcon.Information);
+		}
+
+		// This method will check whether we are running a new file or an already existing file.
+		// If it is an already existing file, it will quick save into the old file.
+		// If it is a new file, it will ask you to choose a path and filename to save. 
+		private void AttemptSave()
+		{
+			// First check for the '*' sign. Create substring without the '*'
 			string title = this.Text;
-			
+
 			if (title[0].Equals('*'))
 			{
 				title = title.Substring(1);
 			}
-			
-			// if this statement is true, we have opened an existing file or have already saved an file
-			// so we just wanna write to the same path again
+
+			// If this statement is true, we are running an already existing file
 			if (title == Path.GetFileName(filePathExists))
 			{
 				QuickSave();
 			}
-			// In this case, we have to open the save as dialog
+			// Otherwise, we have to open the "save as" dialog
 			else
 			{
 				SaveAs();
 			}
 		}
-		
-		private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			SaveAs();
-		}
 
-		private void exitToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			Application.Exit(); // To force trigger FormClosing event
-		}
-
-		private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			MessageBox.Show("Notepad v1.0\nFree to use\nBy Viktor Lundberg\n2022-02-24", "About", MessageBoxButtons.OK,
-				MessageBoxIcon.Information);
-		}
-
+		// "Save as" function. Uses SaveFileDialog and File.WriteAllText as writer. 
 		private void SaveAs()
 		{
-			save = new SaveFileDialog();
+			save = new SaveFileDialog(); // Open new SaveFileDialog
 			save.Filter = "Text Files (*.txt)|*.txt|All Files (*)|*";
-			var result = save.ShowDialog();
+			var result = save.ShowDialog(); // Store response
 
+			// Handle user response
 			if (result == DialogResult.OK)
 			{
 				try
 				{
 					File.WriteAllText(save.FileName, richTextBox.Text);
-					this.Text = Path.GetFileName(save.FileName);
-					filePathExists = save.FileName;
-					isSaved = true;
+					this.Text = Path.GetFileName(save.FileName); // Set title to the filename (without path)
+					isSaved = true; // Update to saved state
+					filePathExists = save.FileName; // Store the name in filePathExists for future references
 				}
 				catch (Exception ex)
 				{
-					MessageBox.Show($"$Error: {ex.Message}", "Error", MessageBoxButtons.OK,
+					// Dummy handling of exception, just in case something goes wrong with the writer.
+					MessageBox.Show($"Error: {ex.Message}\nIf the issue persists, contact system administrator.",
+						"Error", MessageBoxButtons.OK,
 						MessageBoxIcon.Error);
 				}
 			}
 		}
-		
+
+		// Save into already existing file function. No need to get a new file name, we already know it.
 		private void QuickSave()
 		{
 			try
@@ -146,11 +178,13 @@ namespace DVGB07_viktlund104_Laboration3_Notepad
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show($"$Error: {ex.Message}", "Error", MessageBoxButtons.OK,
+				MessageBox.Show($"Error: {ex.Message}\nIf the issue persists, contact system administrator.", "Error",
+					MessageBoxButtons.OK,
 					MessageBoxIcon.Error);
 			}
 		}
 
+		// Open a new file method. Will use OpenFileDialog and File.ReadAllText to load the data. 
 		private void Open()
 		{
 			load = new OpenFileDialog();
@@ -163,31 +197,31 @@ namespace DVGB07_viktlund104_Laboration3_Notepad
 				{
 					richTextBox.Text = File.ReadAllText(load.FileName);
 					this.Text = Path.GetFileName(load.FileName);
-					filePathExists = load.FileName;
 					isSaved = true;
+					filePathExists = load.FileName;
 				}
 				catch (Exception ex)
 				{
-					MessageBox.Show($"$Error: {ex.Message}", "Error", MessageBoxButtons.OK,
+					MessageBox.Show($"Error: {ex.Message}\nIf the issue persists, contact system administrator.",
+						"Error", MessageBoxButtons.OK,
 						MessageBoxIcon.Error);
 				}
 			}
 		}
 
+		// Clear text and set default title
 		private void Clear()
 		{
-			// Clear text and set default title
 			richTextBox.Text = "";
 			this.Text = "Namnlös";
-			isSaved = false;
-			startup = true;
+			isSaved = false; // No saved mode
+			startup = true; // Simulate new startup
 		}
-		
-		// Checking for changes in the textbox. Has the user wrote anything?
+
+		// Checking for changes in the textbox. Has the user wrote anything yet?
+		// Sets a '*' in front of file name to show that file has been edited.
 		private void richTextBox_KeyPress(object sender, KeyPressEventArgs e)
 		{
-			//isSaved = false;
-
 			if (startup == true)
 			{
 				this.Text = "*" + this.Text;
@@ -200,38 +234,18 @@ namespace DVGB07_viktlund104_Laboration3_Notepad
 				isSaved = false;
 			}
 		}
-		
+
 		// Using this event we will catch user clicks off the X button as well as menu exits
 		private void Notepad_FormClosing(object sender, FormClosingEventArgs e)
-		{
-			Exit();
-		}
-
-		private void Exit()
 		{
 			if (isSaved == false && startup == false)
 			{
 				var result = MessageBox.Show("Vill du spara först?", "Notepad", MessageBoxButtons.YesNoCancel,
 					MessageBoxIcon.Stop);
+				
 				if (result == DialogResult.Yes)
 				{
-					// first check for the * sign. remove it
-					string title = this.Text;
-			
-					if (title[0].Equals('*'))
-					{
-						title = title.Substring(1);
-					}
-					
-					// Send to save
-					if (title == Path.GetFileName(filePathExists))
-					{
-						QuickSave();
-					}
-					else
-					{
-						SaveAs();
-					}
+					AttemptSave();
 				}
 			}
 		}
